@@ -31,8 +31,6 @@ class Collection(object):
             json_user = {
                 "id": user.id,
                 "name": user.name,
-                "pw_hash": base64.b64encode(user.pw_hash).decode('utf-8'),
-                "salt": base64.b64encode(user.salt).decode('utf-8'),
                 "email": user.email,
             }
             json_users.append(json_user)
