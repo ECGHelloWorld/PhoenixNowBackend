@@ -3,6 +3,15 @@ import bcrypt
 import base64
 from db import User, Session
 
+def get_user(req, resp):
+    user = Session.query(User).get(req.context['user'])
+    if user is None:
+        req.context['user'] = None
+        description = "User was not found in database"
+        title = "Unauthorized Access"
+        raise falcon.HTTPUnauthorized(title=title, description=description)
+    return user
+
 class Register(object):
     def on_post(self, req, resp):
         doc = req.context['doc']
@@ -33,9 +42,7 @@ class Collection(object):
 class Login(object):
     def on_post(self, req, resp):
         doc = req.context['doc']
-        user = Session.query(User).filter_by(email=doc['email']).first()
-        if user is None:
-            return
+        user = get_user(req, resp)
 
         if user.check_password(doc['password']):
             req.context['user'] = user.id

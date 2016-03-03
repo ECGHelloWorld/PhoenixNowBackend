@@ -1,12 +1,11 @@
 import falcon
 import datetime
 from db import Event, Session, User
+from users import get_user
 
 class Collection(object):
     def on_get(self, req, resp):
-        user = Session.query(User).get(req.context['user'])
-        if user is None:
-            return
+        user = get_user(req, resp)
 
         if user.is_admin():
             events = Session.query(Event).all()
@@ -31,9 +30,7 @@ class Collection(object):
         location = doc['location']
         date_in = datetime.datetime.utcnow()
         if location == "ecg":
-            user = Session.query(User).get(req.context['user'])
-            if user is None:
-                return
+            user = get_user(req, resp)
 
             event = Event(date_in=date_in, user=user)
             Session.add(event)
