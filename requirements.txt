@@ -1,5 +1,5 @@
 falcon
 sqlalchemy
 bcrypt
-jwt
+pyjwt
 uwsgi
