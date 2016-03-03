@@ -34,6 +34,9 @@ class Login(object):
     def on_post(self, req, resp):
         doc = req.context['doc']
         user = Session.query(User).filter_by(email=doc['email']).first()
+        if user is None:
+            return
+
         if user.check_password(doc['password']):
             req.context['user'] = user.id
             req.context['result'] = {"result": "success", "action": "login"}

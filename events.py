@@ -5,6 +5,9 @@ from db import Event, Session, User
 class Collection(object):
     def on_get(self, req, resp):
         user = Session.query(User).get(req.context['user'])
+        if user is None:
+            return
+
         if user.is_admin():
             events = Session.query(Event).all()
         else:
@@ -29,6 +32,9 @@ class Collection(object):
         date_in = datetime.datetime.utcnow()
         if location == "ecg":
             user = Session.query(User).get(req.context['user'])
+            if user is None:
+                return
+
             event = Event(date_in=date_in, user=user)
             Session.add(event)
             Session.commit()
