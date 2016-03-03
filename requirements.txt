@@ -2,3 +2,4 @@ falcon
 sqlalchemy
 bcrypt
 jwt
+uwsgi
