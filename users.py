@@ -2,6 +2,7 @@ import falcon
 import bcrypt
 import base64
 from db import User, Session
+from sqlalchemy import exc
 
 def get_user(req, resp):
     user = Session.query(User).get(req.context['user'])
@@ -15,10 +16,16 @@ def get_user(req, resp):
 class Register(object):
     def on_post(self, req, resp):
         doc = req.context['doc']
-        user = User(name=doc['name'], email=doc['email'])
-        user.salt = bcrypt.gensalt()
-        user.pw_hash = bcrypt.hashpw(doc['password'].encode('utf-8'), user.salt)
-        Session.add(user)
+        try: 
+            user = User(name=doc['name'], email=doc['email'])
+            user.salt = bcrypt.gensalt()
+            user.pw_hash = bcrypt.hashpw(doc['password'].encode('utf-8'), user.salt)
+            Session.add(user)
+            Session.flush()
+        except exc.IntegrityError:
+            description = "User was already made"
+            title = "User creation conflict"
+            raise falcon.HTTPConflict(title=title, description=description)
         Session.commit()
         req.context['user'] = user.id
         req.context['result'] = {"result": "success", "action": "register"}
