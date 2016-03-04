@@ -4,13 +4,29 @@ import base64
 from db import User, Session
 from sqlalchemy import exc
 
+def unauthorized_user(req):
+    req.context['user'] = None
+    description = "User was not found in database"
+    title = "Unauthorized Access"
+    raise falcon.HTTPUnauthorized(title=title, description=description)
+
+
 def get_user(req, resp):
-    user = Session.query(User).get(req.context['user'])
-    if user is None:
-        req.context['user'] = None
-        description = "User was not found in database"
-        title = "Unauthorized Access"
-        raise falcon.HTTPUnauthorized(title=title, description=description)
+    if 'user' in req.context:
+        user = Session.query(User).get(req.context['user'])
+        if user is None:
+            unauthorized_user(req)
+    if 'doc' in req.context:
+        doc = req.context['doc']
+        if 'email' in doc:
+            user = Session.query(User).filter_by(email=doc['email']).first()
+            if user is None:
+                unauthorized_user(req)
+
+        if 'password' in doc:
+            if not user.check_password(doc['password']):
+                unauthorized_user(req)
+
     return user
 
 class Register(object):
@@ -46,15 +62,11 @@ class Collection(object):
 
 class Login(object):
     def on_post(self, req, resp):
-        doc = req.context['doc']
         user = get_user(req, resp)
 
-        if user.check_password(doc['password']):
-            req.context['user'] = user.id
-            req.context['result'] = {"result": "success", "action": "login"}
-            resp.status = falcon.HTTP_200
-        else:
-            req.context['result'] = {"result": "failure", "action": "login"}
+        req.context['user'] = user.id
+        req.context['result'] = {"result": "success", "action": "login"}
+        resp.status = falcon.HTTP_200
 
 class Logout(object):
     def on_get(self, req, resp):
