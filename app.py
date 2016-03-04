@@ -12,8 +12,11 @@ engine = sa.create_engine('sqlite:///data.db')
 Session.configure(bind=engine)
 Base.metadata.create_all(engine)
 
+cors = CORS(allow_all_origins=True, allow_all_headers=True,
+        allow_all_methods=True, allow_credentials_all_origins=True)
+
 api = application = falcon.API(middleware=[
-    CORS(allow_all_origins=True),
+    cors.middleware,
     RequireJSON(),
     JSONTranslator(),
     JWTAuthenticator(),
