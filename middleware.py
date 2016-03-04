@@ -22,7 +22,7 @@ class JWTAuthenticator(object):
         if token != None:
             try:
                 token = token.split()
-                decoded_token = jwt.decode(token[2], 'habberdashery212', algorithm='HS512', verify=False)
+                decoded_token = jwt.decode(token[1], 'habberdashery212', algorithm='HS512', verify=False)
                 req.context['user'] = decoded_token['user']
 
             except jwt.exceptions.DecodeError:
