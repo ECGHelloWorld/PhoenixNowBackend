@@ -5,6 +5,9 @@ import sqlalchemy.orm.scoping as scoping
 
 class JWTAuthenticator(object):
     def process_request(self, req, resp):
+        if req.method == "OPTIONS":
+            return 
+
         token = req.get_header('Authorization')
 
         if req.path != '/register' and req.path != '/login':
