@@ -1,5 +1,6 @@
 import falcon
 import sqlalchemy as sa
+from falcon_cors import CORS
 
 import db
 from db import Session, Base
@@ -12,6 +13,7 @@ Session.configure(bind=engine)
 Base.metadata.create_all(engine)
 
 api = application = falcon.API(middleware=[
+    CORS(allow_all_origins=True),
     RequireJSON(),
     JSONTranslator(),
     JWTAuthenticator(),

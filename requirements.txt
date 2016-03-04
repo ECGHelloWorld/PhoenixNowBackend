@@ -3,3 +3,4 @@ sqlalchemy
 bcrypt
 pyjwt
 uwsgi
+falcon-cors
