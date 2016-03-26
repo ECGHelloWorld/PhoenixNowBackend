@@ -43,7 +43,7 @@ class JWTAuthenticator(object):
                 token = jwt.encode(result, 'habberdashery212', algorithm='HS512')
 
                 resp.set_header('Authorization', "Bearer " + token.decode('utf-8'))
-                result['token'] = token.decode('utf-8')
+                result['token'] = "Bearer " + token.decode('utf-8')
 
 
 class SQLAlchemySessionManager(object):
