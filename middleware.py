@@ -39,11 +39,11 @@ class JWTAuthenticator(object):
         if 'user' in req.context:
             if req.context['user'] is not None:
                 result = req.context['result']
-                result['user'] = req.context['user']
 
                 token = jwt.encode(result, 'habberdashery212', algorithm='HS512')
 
                 resp.set_header('Authorization', "Bearer " + token.decode('utf-8'))
+                result['token'] = token.decode('utf-8')
 
 
 class SQLAlchemySessionManager(object):
