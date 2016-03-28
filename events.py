@@ -27,18 +27,26 @@ class Collection(object):
 
     def on_post(self, req, resp):
         doc = req.context['doc']
-        location = doc['location']
+        lat = doc['lat']
+        lon = doc['lon']
         date_in = datetime.datetime.utcnow()
-        if location == "ecg":
+        if lat and lon:
             user = get_user(req, resp)
 
-            event = Event(date_in=date_in, user=user)
-            Session.add(event)
-            Session.commit()
+            if lon >= -79.8833942:
+                if lat <= 36.0984408:
+                    if lat >= 36.0903956:
+                        event = Event(date_in=date_in, user=user)
+                        Session.add(event)
+                        Session.commit()
 
-            resp.status = falcon.HTTP_201
-            resp.location = '/events/%s' % (event.id)
-            req.context['result'] = {"action": "sign in", "result": "success"}
+                        resp.status = falcon.HTTP_201
+                        resp.location = '/events/%s' % (event.id)
+                        req.context['result'] = {"action": "sign in", "result": "success"}
+            else:
+                resp.status = falcon.HTTP_409
+                req.context['result'] = {"action": "sign in", "result": "failure"}
+
         else:
             resp.status = falcon.HTTP_409
             req.context['result'] = {"action": "sign in", "result": "failure"}
