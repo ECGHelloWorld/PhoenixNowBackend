@@ -33,7 +33,8 @@ class Collection(object):
         if lat and lon:
             user = get_user(req, resp)
 
-            if lon >= -79.8833942:
+        if lon >= -79.8921061:
+            if lon <= -79.8833942:
                 if lat <= 36.0984408:
                     if lat >= 36.0903956:
                         event = Event(date_in=date_in, user=user)
