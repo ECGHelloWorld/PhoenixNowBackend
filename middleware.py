@@ -2,6 +2,11 @@ import jwt
 import falcon
 import json
 import sqlalchemy.orm.scoping as scoping
+import logging
+
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.FileHandler('test.log'))
+logger.setLevel(logging.INFO)
 
 class JWTAuthenticator(object):
     def process_request(self, req, resp):
@@ -116,3 +121,7 @@ class JSONTranslator(object):
 
         resp.body = json.dumps(req.context['result'])
 
+
+class ResponseLoggerMiddleware(object):
+    def process_response(self, req, resp, resource):
+        logger.info('{0} {1} {2} {3}'.format(req.method, req.relative_uri, resp.status[:3], req.context['result']))

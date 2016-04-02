@@ -15,7 +15,7 @@ class Collection(object):
         signins_json = []
         for signin in signins:
             date = signin.date_in.strftime("%Y-%m-%d")
-            signin_json.append({'id': signin.id, 'date': date})
+            signins_json.append({'id': signin.id, 'date': date})
 
         req.context['result'] = {
                 'action': 'get signins',
