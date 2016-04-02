@@ -16,7 +16,7 @@ class User(Base):
     email = Column(String, unique=True)
     pw_hash = Column(String)
     salt = Column(String)
-    events = relationship("Event", back_populates="user")
+    signins = relationship("Signin", back_populates="user")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -30,13 +30,13 @@ class User(Base):
     def __repr__(self):
         return "<User(name='%s')>" % (self.name)
 
-class Event(Base):
-    __tablename__ = 'event'
+class Signin(Base):
+    __tablename__ = 'signin'
 
     id = Column(Integer, primary_key=True)
     date_in = Column(DateTime)
     user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship("User", back_populates="events")
+    user = relationship("User", back_populates="signins")
 
     def __repr__(self):
-        return "<Event(name='%s')>" % (self.name)
+        return "<Signin(id='%s')>" % (self.id)

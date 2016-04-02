@@ -1,6 +1,6 @@
 import falcon
 import datetime
-from db import Event, Session, User
+from db import Signin, Session, User
 from users import get_user
 
 class Collection(object):
@@ -8,19 +8,19 @@ class Collection(object):
         user = get_user(req, resp)
 
         if user.is_admin():
-            events = Session.query(Event).all()
+            signins = Session.query(Signin).all()
         else:
-            events = Session.query(Event).filter_by(user=user).all()
+            signins = Session.query(Signin).filter_by(user=user).all()
 
-        events_json = []
-        for event in events:
-            date = event.date_in.strftime("%Y-%m-%d")
-            events_json.append({'id': event.id, 'date': date})
+        signins_json = []
+        for signin in signins:
+            date = signin.date_in.strftime("%Y-%m-%d")
+            signin_json.append({'id': signin.id, 'date': date})
 
         req.context['result'] = {
-                'action': 'get events',
+                'action': 'get signins',
                 'result': 'success',
-                'events': events_json
+                'signins': signins_json
         }
 
         resp.status = falcon.HTTP_200
@@ -37,12 +37,12 @@ class Collection(object):
             if lon <= -79.8833942:
                 if lat <= 36.0984408:
                     if lat >= 36.0903956:
-                        event = Event(date_in=date_in, user=user)
-                        Session.add(event)
+                        signin = Signin(date_in=date_in, user=user)
+                        Session.add(signin)
                         Session.commit()
 
                         resp.status = falcon.HTTP_201
-                        resp.location = '/events/%s' % (event.id)
+                        resp.location = '/signins/%s' % (signin.id)
                         req.context['result'] = {"action": "sign in", "result": "success"}
             else:
                 resp.status = falcon.HTTP_409
@@ -55,21 +55,21 @@ class Collection(object):
 class Item(object):
     def on_get(self, req, resp, item_id):
         user = Session.query(User).get(req.context['user'])
-        event = Session.query(Event).get(item_id)
-        if event.user == user or user.is_admin():
-            date_in = event.date_in.strftime("%Y-%m-%d")
+        signin = Session.query(Signin).get(item_id)
+        if signin.user == user or user.is_admin():
+            date_in = signin.date_in.strftime("%Y-%m-%d")
             req.context['result'] = {
-                    'action': 'get event',
+                    'action': 'get signin',
                     'result': 'success',
-                    'event': {
-                        "id": event.id,
+                    'signin': {
+                        "id": signin.id,
                         "date": date_in
                     }
             }
             resp.status = falcon.HTTP_200
         else:
             req.context['result'] = {
-                'action': 'get event',
+                'action': 'get signin',
                 'result': 'failure',
                 'error': 'wrong user'
             }

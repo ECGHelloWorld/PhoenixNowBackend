@@ -6,7 +6,7 @@ import db
 from db import Session, Base
 from middleware import RequireJSON, JSONTranslator, SQLAlchemySessionManager, JWTAuthenticator
 import users
-import events
+import signins
 
 engine = sa.create_engine('sqlite:///data.db')
 Session.configure(bind=engine)
@@ -30,14 +30,14 @@ login = users.Login()
 
 user_collection = users.Collection()
 
-event_collection = events.Collection()
-event = events.Item()
+signin_collection = signins.Collection()
+signin = signins.Item()
 
 logout = users.Logout()
 
 api.add_route('/login', login)
 api.add_route('/logout', logout)
 api.add_route('/register', register)
-api.add_route('/events', event_collection)
-api.add_route('/events/{item_id}', event)
+api.add_route('/signins', signin_collection)
+api.add_route('/signins/{item_id}', signin)
 api.add_route('/users', user_collection)
