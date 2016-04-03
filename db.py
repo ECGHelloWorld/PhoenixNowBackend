@@ -50,7 +50,6 @@ class Event(Base):
     to_date = Column(Date)
     title = Column(String)
     description = Column(String)
-    importance = Column(Integer)
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates="events")
 

@@ -18,7 +18,6 @@ class Collection(object):
                 'from_date': from_date,
                 'to_date': to_date,
                 'title': event.title,
-                'importance': event.importance,
                 'description': event.description
             })
 
@@ -35,7 +34,6 @@ class Collection(object):
 
         title = doc['title']
         description = doc['description']
-        importance = doc['importance']
         from_date = doc['from_date']
         to_date = doc['to_date']
 
@@ -45,7 +43,7 @@ class Collection(object):
         user = get_user(req, resp)
 
         event = Event(from_date=from_date_datetime, to_date=to_date_datetime, title=title,
-                description=description, importance=importance, user=user)
+                description=description, user=user)
         Session.add(event)
         Session.commit()
 
@@ -56,7 +54,6 @@ class Collection(object):
                     'from_date': from_date,
                     'to_date': to_date,
                     'title': event.title,
-                    'importance': event.importance,
                     'description': event.description
                 }
             }
@@ -72,7 +69,6 @@ class Item(object):
                     'from_date': from_date,
                     'to_date': to_date,
                     'title': event.title,
-                    'importance': event.importance,
                     'description': event.description
                 }
         }
