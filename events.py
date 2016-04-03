@@ -61,6 +61,8 @@ class Collection(object):
 class Item(object):
     def on_get(self, req, resp, item_id):
         event = Session.query(Event).get(item_id)
+        from_date = event.from_date.strftime("%Y-%m-%d")
+        to_date = event.to_date.strftime("%Y-%m-%d")
         req.context['result'] = {
                 'action': 'get signin',
                 'result': 'success',
