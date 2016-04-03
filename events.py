@@ -64,7 +64,7 @@ class Item(object):
         from_date = event.from_date.strftime("%Y-%m-%d")
         to_date = event.to_date.strftime("%Y-%m-%d")
         req.context['result'] = {
-                'action': 'get signin',
+                'action': 'get event',
                 'result': 'success',
                 'event': {
                     'id': event.id,
@@ -75,3 +75,22 @@ class Item(object):
                 }
         }
         resp.status = falcon.HTTP_200
+
+    def on_delete(self, req, resp, item_id):
+        event = Session.query(Event).get(item_id)
+        from_date = event.from_date.strftime("%Y-%m-%d")
+        to_date = event.to_date.strftime("%Y-%m-%d")
+        req.context['result'] = {
+                'action': 'delete event',
+                'result': 'success',
+                'event': {
+                    'id': event.id,
+                    'from_date': from_date,
+                    'to_date': to_date,
+                    'title': event.title,
+                    'description': event.description
+                }
+        }
+        resp.status = falcon.HTTP_200
+        Session.delete(event)
+        Session.commit()
