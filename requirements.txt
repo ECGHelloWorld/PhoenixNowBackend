@@ -1,5 +1,6 @@
 falcon
 sqlalchemy
+gunicorn
 bcrypt
 pyjwt
 uwsgi
