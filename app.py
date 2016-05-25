@@ -30,6 +30,7 @@ register = users.Register()
 login = users.Login()
 
 user_collection = users.Collection()
+user = users.Item()
 
 signin_collection = signins.Collection()
 signin = signins.Item()
@@ -47,3 +48,4 @@ api.add_route('/signins/{item_id}', signin)
 api.add_route('/events', event_collection)
 api.add_route('/events/{item_id}', event)
 api.add_route('/users', user_collection)
+api.add_route('/users/{item_id}', user)

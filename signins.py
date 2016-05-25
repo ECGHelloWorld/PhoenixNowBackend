@@ -38,6 +38,7 @@ class Collection(object):
                 if lat <= 36.0984408:
                     if lat >= 36.0903956:
                         signin = Signin(date_in=date_in, user=user)
+                        user.signedin = True
                         Session.add(signin)
                         Session.commit()
 

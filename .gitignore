@@ -63,3 +63,7 @@ target/
 
 # Database
 data.db
+
+# Celery
+celerybeat-schedule
+celerydb.sqlite

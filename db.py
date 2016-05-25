@@ -16,6 +16,7 @@ class User(Base):
     email = Column(String, unique=True)
     pw_hash = Column(String)
     salt = Column(String)
+    signedin = Column(Boolean)
     signins = relationship("Signin", back_populates="user")
     events = relationship("Event", back_populates="user")
 
@@ -26,7 +27,12 @@ class User(Base):
         return self.pw_hash == bcrypt.hashpw(password.encode('utf-8'), self.salt)
 
     def is_admin(self):
-        return self.email == 'daynb@guilford.edu'
+        if self.email == 'daynb@guilford.edu':
+            return True
+        elif self.email == 'kiddlm@guilford.edu':
+            return True
+        else:
+            return False
 
     def __repr__(self):
         return "<User(name='%s')>" % (self.name)

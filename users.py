@@ -29,11 +29,34 @@ def get_user(req, resp):
 
     return user
 
+class Item(object):
+    def on_get(self, req, resp, item_id):
+        user = get_user(req, resp)
+
+        if user.is_admin():
+            user = Session.query(User).get(item_id)
+            signins_json = []
+            for signin in user.signins:
+                date = signin.date_in.strftime("%Y-%m-%d")
+                signins_json.append({'id': signin.id, 'date': date})
+
+            req.context['result'] = {
+                    'action': 'get signins',
+                    'result': 'success',
+                    'signins': signins_json
+            }
+
+            resp.status = falcon.HTTP_200
+        else:
+            description = "User is not administrator and can not access this information"
+            title = "User unauthorized"
+            raise falcon.HTTPUnauthorized(title=title, description=description)
+
 class Register(object):
     def on_post(self, req, resp):
         doc = req.context['doc']
         try: 
-            user = User(name=doc['name'], email=doc['email'])
+            user = User(name=doc['name'], email=doc['email'], signedin=False)
             user.salt = bcrypt.gensalt()
             user.pw_hash = bcrypt.hashpw(doc['password'].encode('utf-8'), user.salt)
             Session.add(user)
@@ -48,17 +71,25 @@ class Register(object):
 
 class Collection(object):
     def on_get(self, req, resp):
-        json_users = []
-        users = Session.query(User).all()
-        for user in users:
-            json_user = {
-                "id": user.id,
-                "name": user.name,
-                "email": user.email,
-            }
-            json_users.append(json_user)
+        user = get_user(req, resp)
 
-        req.context['result'] = {"users": json_users}
+        if user.is_admin():
+            json_users = []
+            users = Session.query(User).all()
+            for user in users:
+                json_user = {
+                    "id": user.id,
+                    "name": user.name,
+                    "email": user.email,
+                    "signedin": str(user.signedin)
+                }
+                json_users.append(json_user)
+
+            req.context['result'] = {"users": json_users}
+        else:
+            description = "User is not administrator and can not access this information"
+            title = "User unauthorized"
+            raise falcon.HTTPUnauthorized(title=title, description=description)
 
 class Login(object):
     def on_post(self, req, resp):
