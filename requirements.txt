@@ -6,3 +6,5 @@ pyjwt
 uwsgi
 falcon-cors
 celery
+# Falcon doesn't include this one
+mimeparse
