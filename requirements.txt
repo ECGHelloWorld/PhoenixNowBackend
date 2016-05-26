@@ -1,10 +1,8 @@
-falcon
-sqlalchemy
-gunicorn
-bcrypt
-pyjwt
-uwsgi
-falcon-cors
-celery
-# Falcon doesn't include this one
-mimeparse
+falcon==0.3.0
+sqlalchemy==1.0.12
+gunicorn==19.4.1
+bcrypt==2.0.0
+jwt==0.3.2
+uwsgi==2.0.11.2
+falcon-cors==1.0.1
+celery==3.1.23
