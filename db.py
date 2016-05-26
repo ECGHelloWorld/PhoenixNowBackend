@@ -17,6 +17,8 @@ class User(Base):
     pw_hash = Column(String)
     salt = Column(String)
     signedin = Column(Boolean)
+    scheduleverified=Column(Boolean)
+    schedule=Column(String)
     signins = relationship("Signin", back_populates="user")
     events = relationship("Event", back_populates="user")
 

@@ -51,17 +51,35 @@ class Item(object):
             description = "User is not administrator and can not access this information"
             title = "User unauthorized"
             raise falcon.HTTPUnauthorized(title=title, description=description)
+    def on_post(self,req,resp,item_id):
+        user=get_user(req,resp)
+
+        if user.isadmin():
+            user=Session.query(User).get(item_id)
+            user.scheduleverified=True
+            Session.commit()
+            resp.status=falcon.HTTP_200
+            req.context['result']={'action':'verify_schedule','result':'success'}
+        else:
+            description = "User is not administrator and can not change this information"
+            title = "User unauthorized"
+            raise falcon.HTTPUnauthorized(title=title, description=description)
 
 class Register(object):
     def on_post(self, req, resp):
         doc = req.context['doc']
-        try: 
+        users=Session.query(User).all()
+        unique=True
+        for user in users:
+            if doc['email'] == user.email:
+                unique=False
+        if unique:
             user = User(name=doc['name'], email=doc['email'], signedin=False)
             user.salt = bcrypt.gensalt()
             user.pw_hash = bcrypt.hashpw(doc['password'].encode('utf-8'), user.salt)
             Session.add(user)
             Session.flush()
-        except exc.IntegrityError:
+        else:
             description = "User was already made"
             title = "User creation conflict"
             raise falcon.HTTPConflict(title=title, description=description)
@@ -81,7 +99,9 @@ class Collection(object):
                     "id": user.id,
                     "name": user.name,
                     "email": user.email,
-                    "signedin": str(user.signedin)
+                    "signedin": str(user.signedin),
+                    "schedule":user.schedule,
+                    "scheduleverified":str(user.scheduleverified)
                 }
                 json_users.append(json_user)
 
@@ -104,3 +124,25 @@ class Logout(object):
         req.context['user'] = None
         resp.status = falcon.HTTP_200
         req.context['result'] = {"result": "success", "action": "logout"}
+
+class Schedule(object):
+    def on_post(self, req,resp):
+        doc=req.context['doc']
+
+        m=doc['M']
+        t=doc['T']
+        w=doc['W']
+        r=doc['R']
+        f=doc['F']
+
+        user=get_user(req,resp)
+        user.schedule="m:"+m+" t:"+t+" w:"+w+" r:"+r+" f:"+f
+        Session.commit()
+class GetSchedule(object):
+    def on_post(self,req,resp):
+        user=get_user(req,resp)
+        if user.scheduleverified:
+            req.context['result']={"Schedule":user.schedule}
+            resp.status=falcon.HTTP_200
+        else:
+            resp.status=falcon.HTTP_200

@@ -11,7 +11,7 @@ logger.setLevel(logging.INFO)
 class JWTAuthenticator(object):
     def process_request(self, req, resp):
         if req.method == "OPTIONS":
-            return 
+            return
 
         token = req.get_header('Authorization')
 
@@ -45,6 +45,7 @@ class JWTAuthenticator(object):
             if req.context['user'] is not None:
                 if 'result' in req.context:
                     result = req.context['result']
+                    token_input=result
                     token_input = result.copy()
                     token_input['user'] = req.context['user']
 
