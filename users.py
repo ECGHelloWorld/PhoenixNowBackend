@@ -54,9 +54,10 @@ class Item(object):
     def on_post(self,req,resp,item_id):
         user=get_user(req,resp)
 
-        if user.isadmin():
+        if user.is_admin():
             user=Session.query(User).get(item_id)
             user.scheduleverified=True
+            user.finalschedule=user.schedule
             Session.commit()
             resp.status=falcon.HTTP_200
             req.context['result']={'action':'verify_schedule','result':'success'}
@@ -101,7 +102,8 @@ class Collection(object):
                     "email": user.email,
                     "signedin": str(user.signedin),
                     "schedule":user.schedule,
-                    "scheduleverified":str(user.scheduleverified)
+                    "scheduleverified":str(user.scheduleverified),
+                    "finalschedule":user.finalschedule
                 }
                 json_users.append(json_user)
 
@@ -136,13 +138,23 @@ class Schedule(object):
         f=doc['F']
 
         user=get_user(req,resp)
-        user.schedule="m:"+m+" t:"+t+" w:"+w+" r:"+r+" f:"+f
+        user.schedule=""
+        if m=="true":
+            user.schedule=user.schedule+"M"
+        if t=="true":
+            user.schedule=user.schedule+"T"
+        if w=="true":
+            user.schedule=user.schedule+"W"
+        if r=="true":
+            user.schedule=user.schedule+"R"
+        if f=="true":
+            user.schedule=user.schedule+"F"
         Session.commit()
 class GetSchedule(object):
     def on_post(self,req,resp):
         user=get_user(req,resp)
         if user.scheduleverified:
-            req.context['result']={"Schedule":user.schedule}
+            req.context['result']={"VerifiedSchedule":user.finalschedule, "SubmittedSchedule":user.schedule}
             resp.status=falcon.HTTP_200
         else:
             resp.status=falcon.HTTP_200

@@ -19,6 +19,7 @@ class User(Base):
     signedin = Column(Boolean)
     scheduleverified=Column(Boolean)
     schedule=Column(String)
+    finalschedule=Column(String)
     signins = relationship("Signin", back_populates="user")
     events = relationship("Event", back_populates="user")
 
