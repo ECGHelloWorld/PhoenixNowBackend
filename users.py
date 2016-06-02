@@ -3,6 +3,9 @@ import bcrypt
 import base64
 from db import User, Session
 from sqlalchemy import exc
+import smtplib
+from email.mime.text import MIMEText
+from random import randint
 
 def unauthorized_user(req):
     req.context['user'] = None
@@ -78,6 +81,17 @@ class Register(object):
             user = User(name=doc['name'], email=doc['email'], signedin=False)
             user.salt = bcrypt.gensalt()
             user.pw_hash = bcrypt.hashpw(doc['password'].encode('utf-8'), user.salt)
+            s=smtplib.SMTP_SSL('smtp.gmail.com',465)
+            s.ehlo()
+            s.login('phoenixnownoreply@gmail.com','helloworld@ppclub')
+            code=randint(1000,9999)
+            user.code=code
+            msg=MIMEText('Hi '+user.name+', your verification code is: '+str(code))
+            msg['From']='phoenixnownoreply@gmail.com'
+            msg['To']=user.email
+            msg['Subject']='PhoenixNow Account Confirmation'
+            s.send_message(msg)
+            s.close()
             Session.add(user)
             Session.flush()
         else:
@@ -116,10 +130,24 @@ class Collection(object):
 class Login(object):
     def on_post(self, req, resp):
         user = get_user(req, resp)
+        if user.emailVerified:
+            req.context['user'] = user.id
+            req.context['result'] = {"result": "success", "action": "login"}
+            resp.status = falcon.HTTP_200
+        else:
+            doc=req.context['doc']
+            if doc['code']=='null':
+                resp.status=falcon.HTTP_201
+            else:
+                if doc['code']==str(user.code):
+                    user.emailVerified=True
+                    Session.commit()
+                    req.context['user'] = user.id
+                    req.context['result'] = {"result": "success", "action": "login"}
+                    resp.status = falcon.HTTP_200
+                else:
+                    resp.status=falcon.HTTP_202
 
-        req.context['user'] = user.id
-        req.context['result'] = {"result": "success", "action": "login"}
-        resp.status = falcon.HTTP_200
 
 class Logout(object):
     def on_get(self, req, resp):
@@ -153,8 +181,5 @@ class Schedule(object):
 class GetSchedule(object):
     def on_post(self,req,resp):
         user=get_user(req,resp)
-        if user.scheduleverified:
-            req.context['result']={"VerifiedSchedule":user.finalschedule, "SubmittedSchedule":user.schedule}
-            resp.status=falcon.HTTP_200
-        else:
-            resp.status=falcon.HTTP_200
+        req.context['result']={"VerifiedSchedule":user.finalschedule, "SubmittedSchedule":user.schedule}
+        resp.status=falcon.HTTP_200

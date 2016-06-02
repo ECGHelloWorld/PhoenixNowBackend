@@ -20,6 +20,8 @@ class User(Base):
     scheduleverified=Column(Boolean)
     schedule=Column(String)
     finalschedule=Column(String)
+    code=Column(Integer)
+    emailVerified=Column(Boolean)
     signins = relationship("Signin", back_populates="user")
     events = relationship("Event", back_populates="user")
 
