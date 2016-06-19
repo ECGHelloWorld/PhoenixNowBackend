@@ -12,7 +12,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String)
     email = Column(String, unique=True)
     pw_hash = Column(String)
     salt = Column(String)
@@ -35,6 +35,10 @@ class User(Base):
         if self.email == 'daynb@guilford.edu':
             return True
         elif self.email == 'kiddlm@guilford.edu':
+            return True
+        elif self.email=='kerrj@guilford.edu':
+            return True
+        elif self.email=='justin.g.kerr@gmail.com':
             return True
         else:
             return False

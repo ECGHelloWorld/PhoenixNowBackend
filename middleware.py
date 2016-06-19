@@ -15,7 +15,7 @@ class JWTAuthenticator(object):
 
         token = req.get_header('Authorization')
 
-        if req.path != '/register' and req.path != '/login':
+        if req.path != '/register' and req.path != '/login' and 'confirmation' not in req.path:
             if token is None:
                 description = ('Please provide an auth token '
                                'as part of the request.')
@@ -48,8 +48,9 @@ class JWTAuthenticator(object):
                         token_input = result.copy()
                         token_input['user'] = req.context['user']
                         token = jwt.encode(token_input, 'habberdashery212', algorithm='HS512')
-                        resp.set_header('Authorization', "Bearer " + token.decode('utf-8'))
-                        result['token'] = "Bearer " + token.decode('utf-8')
+                        if req.path!='/register':
+                            resp.set_header('Authorization', "Bearer " + token.decode('utf-8'))
+                            result['token'] = "Bearer " + token.decode('utf-8')
 
 
 class SQLAlchemySessionManager(object):

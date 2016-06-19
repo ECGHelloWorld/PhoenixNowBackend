@@ -69,6 +69,17 @@ class Item(object):
             title = "User unauthorized"
             raise falcon.HTTPUnauthorized(title=title, description=description)
 
+class Confirm(object):
+    def on_get(self,req,resp,code):
+        users=Session.query(User).all()
+        for user in users:
+            if str(user.code)==str(code):
+                user.emailVerified=True
+                resp.body="SUCCESS"
+        Session.commit()
+
+
+
 class Register(object):
     def on_post(self, req, resp):
         doc = req.context['doc']
@@ -84,9 +95,9 @@ class Register(object):
             s=smtplib.SMTP_SSL('smtp.gmail.com',465)
             s.ehlo()
             s.login('phoenixnownoreply@gmail.com','helloworld@ppclub')
-            code=randint(1000,9999)
+            code=randint(1000000,10000000)
             user.code=code
-            msg=MIMEText('Hi '+user.name+', your verification code is: '+str(code))
+            msg=MIMEText('Hi '+user.name+', your verification URL is: '+'http://192.168.1.127:8000/confirmation/'+str(code))
             msg['From']='phoenixnownoreply@gmail.com'
             msg['To']=user.email
             msg['Subject']='PhoenixNow Account Confirmation'
@@ -94,13 +105,13 @@ class Register(object):
             s.close()
             Session.add(user)
             Session.flush()
+            Session.commit()
+            req.context['user'] = user.id
+            req.context['result'] = {"result": "success", "action": "register"}
         else:
             description = "User was already made"
             title = "User creation conflict"
             raise falcon.HTTPConflict(title=title, description=description)
-        Session.commit()
-        req.context['user'] = user.id
-        req.context['result'] = {"result": "success", "action": "register"}
 
 class Collection(object):
     def on_get(self, req, resp):
@@ -130,23 +141,16 @@ class Collection(object):
 class Login(object):
     def on_post(self, req, resp):
         user = get_user(req, resp)
-        if user.emailVerified:
+        if user.emailVerified==True:
             req.context['user'] = user.id
             req.context['result'] = {"result": "success", "action": "login"}
             resp.status = falcon.HTTP_200
         else:
-            doc=req.context['doc']
-            if doc['code']=='null':
-                resp.status=falcon.HTTP_201
-            else:
-                if doc['code']==str(user.code):
-                    user.emailVerified=True
-                    Session.commit()
-                    req.context['user'] = user.id
-                    req.context['result'] = {"result": "success", "action": "login"}
-                    resp.status = falcon.HTTP_200
-                else:
-                    resp.status=falcon.HTTP_202
+            raise falcon.HTTPUnauthorized('Authentication required',
+                                          'User unverified',
+                                          href='http://docs.example.com/auth',
+                                          scheme='Token; UUID')
+            resp.body='{"result":"failure"}'
 
 
 class Logout(object):
