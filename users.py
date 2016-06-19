@@ -6,6 +6,7 @@ from sqlalchemy import exc
 import smtplib
 from email.mime.text import MIMEText
 from random import randint
+import datetime
 
 def unauthorized_user(req):
     req.context['user'] = None
@@ -89,7 +90,8 @@ class Register(object):
             if doc['email'] == user.email:
                 unique=False
         if unique:
-            user = User(name=doc['name'], email=doc['email'], signedin=False)
+            user = User(name=doc['name'], email=doc['email'], signedin=False,registerTime=datetime.datetime.today())
+            print(datetime.datetime.today())
             user.salt = bcrypt.gensalt()
             user.pw_hash = bcrypt.hashpw(doc['password'].encode('utf-8'), user.salt)
             s=smtplib.SMTP_SSL('smtp.gmail.com',465)
@@ -109,9 +111,35 @@ class Register(object):
             req.context['user'] = user.id
             req.context['result'] = {"result": "success", "action": "register"}
         else:
-            description = "User was already made"
-            title = "User creation conflict"
-            raise falcon.HTTPConflict(title=title, description=description)
+            user=get_user(req,resp)
+            td=datetime.timedelta(minutes=30)
+            if datetime.datetime.today()-td<user.registerTime or user.emailVerified==True:
+                description = "User was already made"
+                title = "User creation conflict"
+                raise falcon.HTTPConflict(title=title, description=description)
+            else:
+                Session.delete(user)
+                Session.flush()
+                user = User(name=doc['name'], email=doc['email'], signedin=False,registerTime=datetime.datetime.today())
+                print(datetime.datetime.today())
+                user.salt = bcrypt.gensalt()
+                user.pw_hash = bcrypt.hashpw(doc['password'].encode('utf-8'), user.salt)
+                s=smtplib.SMTP_SSL('smtp.gmail.com',465)
+                s.ehlo()
+                s.login('phoenixnownoreply@gmail.com','helloworld@ppclub')
+                code=randint(1000000,10000000)
+                user.code=code
+                msg=MIMEText('Hi '+user.name+', your verification URL is: '+'http://192.168.1.127:8000/confirmation/'+str(code))
+                msg['From']='phoenixnownoreply@gmail.com'
+                msg['To']=user.email
+                msg['Subject']='PhoenixNow Account Confirmation'
+                s.send_message(msg)
+                s.close()
+                Session.add(user)
+                Session.flush()
+                Session.commit()
+                req.context['user'] = user.id
+                req.context['result'] = {"result": "success", "action": "register"}
 
 class Collection(object):
     def on_get(self, req, resp):

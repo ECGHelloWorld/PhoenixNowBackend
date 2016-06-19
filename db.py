@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Date
 from sqlalchemy.orm import relationship
 import bcrypt
+from datetime import datetime
 
 Base = declarative_base()
 
@@ -22,8 +23,10 @@ class User(Base):
     finalschedule=Column(String)
     code=Column(Integer)
     emailVerified=Column(Boolean)
+    registerTime=Column(DateTime)
     signins = relationship("Signin", back_populates="user")
     events = relationship("Event", back_populates="user")
+
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
