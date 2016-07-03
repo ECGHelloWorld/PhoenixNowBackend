@@ -90,7 +90,7 @@ class Register(object):
             if doc['email'] == user.email:
                 unique=False
         if unique:
-            user = User(name=doc['name'], email=doc['email'], signedin=False,registerTime=datetime.datetime.today())
+            user = User(name=doc['name'], (email=doc['email']).lower(), signedin=False,registerTime=datetime.datetime.today())
             print(datetime.datetime.today())
             user.salt = bcrypt.gensalt()
             user.pw_hash = bcrypt.hashpw(doc['password'].encode('utf-8'), user.salt)
